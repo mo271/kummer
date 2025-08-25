@@ -35,15 +35,91 @@ pub fn check_kummer_condition(
 mod tests {
     use super::*;
     use primal::Sieve;
-    use std::collections::HashSet;
+
+    fn run_distance_test(distance: u64, true_cases: &[u64]) {
+        if true_cases.is_empty() {
+            return;
+        }
+        let max_n = *true_cases.iter().max().unwrap();
+        let sieve = Sieve::new(2 * (max_n as usize + distance as usize + 1));
+
+        for &n in true_cases {
+            let result = check_kummer_condition(n, n + distance, &sieve, &[]);
+            assert!(result, "Main check failed for n = {}", n);
+
+            // If the main check passes, verify all intermediate pairs automatically.
+            for i in 0..distance {
+                for j in (i + 1)..=distance {
+                    let u = n + i;
+                    let v = n + j;
+                    assert!(
+                        check_kummer_condition(u, v, &sieve, &[]),
+                        "Intermediate check failed for (u, v) = ({}, {}) on base n = {}",
+                        u,
+                        v,
+                        n
+                    );
+                }
+            }
+        }
+    }
+
+    fn run_gap_test(distance: u64, gap_prime: u64, gap_cases: &[u64]) {
+        if gap_cases.is_empty() {
+            return;
+        }
+        let max_n = *gap_cases.iter().max().unwrap();
+        let sieve = Sieve::new(2 * (max_n as usize + distance as usize + 10));
+        let ignored_prime_slice = &[gap_prime];
+
+        for &n in gap_cases {
+            // Assert the main condition holds.
+            assert!(
+                check_kummer_condition(n, n + distance, &sieve, &[]),
+                "Main gap check failed for n = {}",
+                n
+            );
+
+            // Iterate through ALL intermediate pairs (excluding the main one).
+            for i in 0..=distance {
+                for j in (i + 1)..=distance {
+                    if i == 0 && j == distance {
+                        // Skip the main pair itself.
+                        continue;
+                    }
+
+                    let u = n + i;
+                    let v = n + j;
+                    let result = check_kummer_condition(u, v, &sieve, &[]);
+
+                    let crosses_boundary = ([n, n + distance].contains(&u)
+                        && ![n, n + distance].contains(&v))
+                        || (![n, n + distance].contains(&u) && [n, n + distance].contains(&v));
+                    assert_eq!(result, !crosses_boundary);
+
+                    if crosses_boundary {
+                        //  If it fails, assert it passes when ignoring the gap prime.
+                        assert!(
+                            check_kummer_condition(u, v, &sieve, ignored_prime_slice),
+                            "Gap pair ({}, {}) for base n = {} failed even with ignored prime {}",
+                            u,
+                            v,
+                            n,
+                            gap_prime
+                        );
+                    }
+                }
+            }
+        }
+    }
 
     #[test]
     fn dist_zero_pairs() {
-        // Any number compared with itself should be true.
+        // This test is simple and unique enough to not need a helper.
         let sieve = Sieve::new(1000);
         for n in 0..=500 {
             assert!(
-                check_kummer_condition(n, n + 0, &sieve, &[]),
+                check_kummer_condition(n, n, &sieve, &[]),
                 "distance zero check failed for n = {}",
                 n
             );
@@ -52,117 +128,57 @@ mod tests {
 
     #[test]
     fn dist_one_pairs() {
-        // From https://oeis.org/A129515
         const TRUE_CASES: &[u64] = &[
             87, 199, 237, 467, 607, 967, 1127, 1319, 1483, 1903, 1943, 2012, 2047, 2287, 2348,
             2359, 2464, 2479, 2495, 2507, 2623, 2645, 2719, 3349, 3467, 3514, 3568, 3629, 3633,
             3712, 3847, 3919, 4088, 4224, 4287, 4360, 4479, 4927, 4987, 5087, 5167, 5224, 5669,
         ];
-
-        let max_n = *TRUE_CASES.iter().max().unwrap();
-        let sieve = Sieve::new(2 * (max_n as usize + 1));
-
-        let true_set: HashSet<u64> = TRUE_CASES.iter().cloned().collect();
-
-        for n in 1..=max_n {
-            assert_eq!(
-                check_kummer_condition(n, n + 1, &sieve, &[]),
-                true_set.contains(&n)
-            );
-        }
+        run_distance_test(1, TRUE_CASES);
     }
 
     #[test]
-    #[ignore]
     fn dist_two_pairs() {
-        // From https://oeis.org/A129515
         const TRUE_CASES: &[u64] = &[
             10003, 17374, 47487, 111547, 121602, 129784, 133161, 142239, 142781, 143762, 152190,
             213425, 233332, 250711, 253273, 266843, 288062, 291786, 295135, 303772, 306008, 356277,
         ];
-
-        let max_n = *TRUE_CASES.iter().max().unwrap();
-        let sieve = Sieve::new(2 * (max_n as usize + 1));
-
-        let true_set: HashSet<u64> = TRUE_CASES.iter().cloned().collect();
-
-        for n in 1..=max_n {
-            let result = check_kummer_condition(n, n + 2, &sieve, &[]);
-
-            if true_set.contains(&n) {
-                assert!(result);
-                // For those numbers (smallest counterexample to that is 2381725, see below),
-                // we also have that the number in between has the same prime factors for its central binomial coefficient.
-                assert!(check_kummer_condition(n, n + 1, &sieve, &[]));
-                assert!(check_kummer_condition(n + 1, n, &sieve, &[]));
-            } else {
-                assert!(!result);
-            }
-        }
+        run_distance_test(2, TRUE_CASES);
     }
 
     #[test]
-    #[ignore]
     fn dist_two_pairs_with_gap() {
         const GAP_CASES: &[u64] = &[2381725, 129320551, 136226152, 177560668, 177687550];
-        let max_n = *GAP_CASES.iter().max().unwrap();
-        let sieve = Sieve::new(2 * (max_n as usize + 1));
-        for &n in GAP_CASES {
-            assert!(check_kummer_condition(n, n + 2, &sieve, &[]));
-            assert!(!check_kummer_condition(n, n + 1, &sieve, &[]));
-            assert!(!check_kummer_condition(n + 1, n + 2, &sieve, &[]));
-            assert!(check_kummer_condition(n, n + 1, &sieve, &[3]));
-            assert!(check_kummer_condition(n + 1, n + 2, &sieve, &[3]));
-        }
+        run_gap_test(2, 3, GAP_CASES);
     }
 
     #[test]
-    #[ignore]
     fn dist_three_pairs() {
-        // From https://oeis.org/A129515
         const TRUE_CASES: &[u64] = &[3894942, 4505065, 6218569, 7506679, 8879450];
-
-        let max_n = *TRUE_CASES.iter().max().unwrap();
-        let sieve = Sieve::new(2 * (max_n as usize + 1));
-
-        let true_set: HashSet<u64> = TRUE_CASES.iter().cloned().collect();
-
-        for n in 1..=max_n {
-            let result = check_kummer_condition(n, n + 3, &sieve, &[]);
-
-            if true_set.contains(&n) {
-                assert!(result);
-                // For those numbers (smallest counterexample to that is 1_488_831_402, see below),
-                // we also have that the numbers in between have the same prime factors for its central binomial coefficient.
-                assert!(check_kummer_condition(n, n + 1, &sieve, &[]));
-                assert!(check_kummer_condition(n, n + 2, &sieve, &[]));
-                assert!(check_kummer_condition(n + 1, n + 3, &sieve, &[]));
-                assert!(check_kummer_condition(n + 2, n + 3, &sieve, &[]));
-            } else {
-                assert!(!result);
-            }
-        }
+        run_distance_test(3, TRUE_CASES);
     }
 
     #[test]
     #[ignore]
     fn dist_three_pairs_with_gap() {
         const GAP_CASES: &[u64] = &[1_488_831_402];
-        let max_n = *GAP_CASES.iter().max().unwrap();
-        let sieve = Sieve::new(2 * (max_n as usize + 1));
-        for &n in GAP_CASES {
-            assert!(check_kummer_condition(n, n + 3, &sieve, &[]));
-            assert!(!check_kummer_condition(n, n + 1, &sieve, &[]));
-            assert!(!check_kummer_condition(n, n + 2, &sieve, &[]));
-            assert!(!check_kummer_condition(n + 1, n + 3, &sieve, &[]));
-            assert!(!check_kummer_condition(n + 2, n + 3, &sieve, &[]));
-            assert!(check_kummer_condition(n + 1, n + 2, &sieve, &[]));
-            assert!(check_kummer_condition(n, n + 1, &sieve, &[5]));
-            assert!(check_kummer_condition(n, n + 2, &sieve, &[5]));
-            assert!(check_kummer_condition(n + 2, n + 3, &sieve, &[5]));
-            assert!(check_kummer_condition(n + 1, n + 3, &sieve, &[5]));
-        }
+        run_gap_test(3, 5, GAP_CASES);
     }
-
-    // TODO(firsching): add more test: dist_four_pairs, dist_four_pairs_with_gap, dist_five_pairs
+    #[test]
+    #[ignore]
+    fn dist_four_pairs() {
+        const TRUE_CASES: &[u64] = &[94_961_106, 320_592_237, 530_571_772, 413_000_786];
+        run_distance_test(4, TRUE_CASES);
+    }
+    #[test]
+    #[ignore]
+    fn dist_four_pairs_with_gap() {
+        const GAP_CASES: &[u64] = &[39_561_491_884];
+        run_gap_test(4, 5, GAP_CASES);
+    }
+    #[test]
+    #[ignore]
+    fn dist_five_pairs() {
+        const TRUE_CASES: &[u64] = &[15_555_748_327, 16_981_964_421];
+        run_distance_test(5, TRUE_CASES);
+    }
 }
