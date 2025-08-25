@@ -2,14 +2,31 @@ pub fn central_divide(mut n: u64, p: u64) -> bool {
     if n == 0 {
         return false;
     }
+
+    // Pre-calculate the values needed for the loop.
     let p_half = p / 2;
+    // This magic number allows replacing division with multiplication.
+    // This step is now done on every function call.
+    let m_inv = u64::MAX / p + 1;
+
     while n > 0 {
-        let digit = n % p;
+
+        //  Calculate quotient `q = n / p` using 128-bit multiplication.
+        // The result is the "high" 64 bits of the full 128-bit product.
+        let q = ((n as u128 * m_inv as u128) >> 64) as u64;
+
+        // Calculate remainder `digit = n % p` using the quotient.
+        let digit = n - q * p;
+
+
         if digit > p_half {
             return true;
         }
-        n /= p;
+
+        // Set `n` to the quotient for the next iteration.
+        n = q;
     }
+
     false
 }
 
