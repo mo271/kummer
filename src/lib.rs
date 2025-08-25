@@ -4,31 +4,32 @@ pub fn get_divisor(p: u64) -> u64 {
     u64::MAX / p + 1
 }
 
-pub fn central_divide(mut n: u64, p: u64, m_inv: u64) -> bool {
-    if n == 0 {
-        return false;
-    }
-
+pub fn central_divide_match(mut n: u64, mut m: u64, p: u64, m_inv: u64) -> bool {
     // Pre-calculate the values needed for the loop.
     let p_half = p / 2;
 
-    while n > 0 {
-        //  Calculate quotient `q = n / p` using 128-bit multiplication.
+    let mut ndiv = false;
+    let mut mdiv = false;
+
+    while (n > 0 || m > 0) && !(ndiv && mdiv) && !(n == m && ndiv == mdiv) {
+        // Calculate quotient `q = n / p` using 128-bit multiplication.
         // The result is the "high" 64 bits of the full 128-bit product.
-        let q = ((n as u128 * m_inv as u128) >> 64) as u64;
+        let qn = ((n as u128 * m_inv as u128) >> 64) as u64;
+        let qm = ((m as u128 * m_inv as u128) >> 64) as u64;
 
         // Calculate remainder `digit = n % p` using the quotient.
-        let digit = n - q * p;
+        let digitn = n - qn * p;
+        let digitm = m - qm * p;
 
-        if digit > p_half {
-            return true;
-        }
+        ndiv |= digitn > p_half;
+        mdiv |= digitm > p_half;
 
         // Set `n` to the quotient for the next iteration.
-        n = q;
+        n = qn;
+        m = qm;
     }
 
-    false
+    ndiv == mdiv
 }
 
 pub fn check_kummer_condition(
@@ -43,7 +44,7 @@ pub fn check_kummer_condition(
         .copied()
         .take_while(|(p, _)| *p <= max_prime)
         .filter(|(p, _)| !exclude_primes.contains(p))
-        .any(|(p, m_inv)| central_divide(n, p, m_inv) != central_divide(m, p, m_inv));
+        .any(|(p, m_inv)| !central_divide_match(n, m, p, m_inv));
 
     !found_a_failure
 }
