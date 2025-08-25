@@ -7,3 +7,6 @@ edition = "2024"
 clap = { version = "4.5.45", features = ["derive"] }
 primal = "0.3.3"
 rayon = "1.11.0"
+
+[profile.release]
+debug = 1

@@ -29,6 +29,7 @@ fn main() {
         n, m, max_prime
     );
 
+    /*
     let condition_met = check_kummer_condition(n, m, &sieve, &args.exclude_primes);
 
     if condition_met {
@@ -39,4 +40,5 @@ fn main() {
     if !args.exclude_primes.is_empty() {
         println!(" (Not checking the primes from {:?})", args.exclude_primes)
     }
+    */
 }

@@ -1,23 +1,24 @@
-pub fn central_divide(mut n: u64, p: u64) -> bool {
+// This magic number allows replacing division with multiplication.
+// This step is now done on every function call.
+pub fn get_divisor(p: u64) -> u64 {
+    u64::MAX / p + 1
+}
+
+pub fn central_divide(mut n: u64, p: u64, m_inv: u64) -> bool {
     if n == 0 {
         return false;
     }
 
     // Pre-calculate the values needed for the loop.
     let p_half = p / 2;
-    // This magic number allows replacing division with multiplication.
-    // This step is now done on every function call.
-    let m_inv = u64::MAX / p + 1;
 
     while n > 0 {
-
         //  Calculate quotient `q = n / p` using 128-bit multiplication.
         // The result is the "high" 64 bits of the full 128-bit product.
         let q = ((n as u128 * m_inv as u128) >> 64) as u64;
 
         // Calculate remainder `digit = n % p` using the quotient.
         let digit = n - q * p;
-
 
         if digit > p_half {
             return true;
@@ -33,17 +34,16 @@ pub fn central_divide(mut n: u64, p: u64) -> bool {
 pub fn check_kummer_condition(
     n: u64,
     m: u64,
-    sieve: &primal::Sieve,
+    primes: &[(u64, u64)],
     exclude_primes: &[u64],
 ) -> bool {
     let max_prime = 2 * m;
-    let found_a_failure = sieve
-        // Is is enough to check starting from 3 here, since all central binoms are even.
-        .primes_from(3)
-        .map(|p| p as u64)
-        .take_while(|&p| p <= max_prime)
-        .filter(|p| !exclude_primes.contains(p))
-        .any(|p| central_divide(n, p) != central_divide(m, p));
+    let found_a_failure = primes
+        .iter()
+        .copied()
+        .take_while(|(p, _)| *p <= max_prime)
+        .filter(|(p, _)| !exclude_primes.contains(p))
+        .any(|(p, m_inv)| central_divide(n, p, m_inv) != central_divide(m, p, m_inv));
 
     !found_a_failure
 }
