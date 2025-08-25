@@ -1,5 +1,5 @@
 use clap::Parser;
-use kummer::check_kummer_condition;
+use kummer::{check_kummer_condition, get_divisor};
 
 /// A simple program to check the Kummer condition for a pair of numbers (n, n + k).
 #[derive(Parser, Debug)]
@@ -24,13 +24,16 @@ fn main() {
 
     let max_prime = 2 * m;
     let sieve = primal::Sieve::new(max_prime as usize);
+    let primes_and_divisor: Vec<_> = sieve
+        .primes_from(3)
+        .map(|x| (x as u64, get_divisor(x as u64)))
+        .collect();
     println!(
         "Checking pair of central binomials ({}, {}) for odd primes factors <= {} ...",
         n, m, max_prime
     );
 
-    /*
-    let condition_met = check_kummer_condition(n, m, &sieve, &args.exclude_primes);
+    let condition_met = check_kummer_condition(n, m, &primes_and_divisor, &args.exclude_primes);
 
     if condition_met {
         print!("✅ Success! Their binomial coefficients have the same prime factors.");
@@ -40,5 +43,4 @@ fn main() {
     if !args.exclude_primes.is_empty() {
         println!(" (Not checking the primes from {:?})", args.exclude_primes)
     }
-    */
 }

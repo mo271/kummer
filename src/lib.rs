@@ -60,9 +60,13 @@ mod tests {
         }
         let max_n = *true_cases.iter().max().unwrap();
         let sieve = Sieve::new(2 * (max_n as usize + distance as usize + 1));
+        let primes_and_divisor: Vec<_> = sieve
+            .primes_from(3)
+            .map(|x| (x as u64, get_divisor(x as u64)))
+            .collect();
 
         for &n in true_cases {
-            let result = check_kummer_condition(n, n + distance, &sieve, &[]);
+            let result = check_kummer_condition(n, n + distance, &primes_and_divisor, &[]);
             assert!(result, "Main check failed for n = {}", n);
 
             // If the main check passes, verify all intermediate pairs automatically.
@@ -71,7 +75,7 @@ mod tests {
                     let u = n + i;
                     let v = n + j;
                     assert!(
-                        check_kummer_condition(u, v, &sieve, &[]),
+                        check_kummer_condition(u, v, &primes_and_divisor, &[]),
                         "Intermediate check failed for (u, v) = ({}, {}) on base n = {}",
                         u,
                         v,
@@ -88,12 +92,16 @@ mod tests {
         }
         let max_n = *gap_cases.iter().max().unwrap();
         let sieve = Sieve::new(2 * (max_n as usize + distance as usize + 10));
+        let primes_and_divisor: Vec<_> = sieve
+            .primes_from(3)
+            .map(|x| (x as u64, get_divisor(x as u64)))
+            .collect();
         let ignored_prime_slice = &[gap_prime];
 
         for &n in gap_cases {
             // Assert the main condition holds.
             assert!(
-                check_kummer_condition(n, n + distance, &sieve, &[]),
+                check_kummer_condition(n, n + distance, &primes_and_divisor, &[]),
                 "Main gap check failed for n = {}",
                 n
             );
@@ -108,7 +116,7 @@ mod tests {
 
                     let u = n + i;
                     let v = n + j;
-                    let result = check_kummer_condition(u, v, &sieve, &[]);
+                    let result = check_kummer_condition(u, v, &primes_and_divisor, &[]);
 
                     let crosses_boundary = ([n, n + distance].contains(&u)
                         && ![n, n + distance].contains(&v))
@@ -118,7 +126,7 @@ mod tests {
                     if crosses_boundary {
                         //  If it fails, assert it passes when ignoring the gap prime.
                         assert!(
-                            check_kummer_condition(u, v, &sieve, ignored_prime_slice),
+                            check_kummer_condition(u, v, &primes_and_divisor, ignored_prime_slice),
                             "Gap pair ({}, {}) for base n = {} failed even with ignored prime {}",
                             u,
                             v,
@@ -135,9 +143,13 @@ mod tests {
     fn dist_zero_pairs() {
         // This test is simple and unique enough to not need a helper.
         let sieve = Sieve::new(1000);
+        let primes_and_divisor: Vec<_> = sieve
+            .primes_from(3)
+            .map(|x| (x as u64, get_divisor(x as u64)))
+            .collect();
         for n in 0..=500 {
             assert!(
-                check_kummer_condition(n, n, &sieve, &[]),
+                check_kummer_condition(n, n, &primes_and_divisor, &[]),
                 "distance zero check failed for n = {}",
                 n
             );

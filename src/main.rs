@@ -52,7 +52,10 @@ fn main() {
         let max_sieve_val = 2 * (current_end.saturating_add(k));
         let sieve = primal::Sieve::new(max_sieve_val as usize);
 
-        let primes_and_divisor: Vec<_> = sieve.primes_from(3).map(|x| (x as u64, get_divisor(x as u64))).collect();
+        let primes_and_divisor: Vec<_> = sieve
+            .primes_from(3)
+            .map(|x| (x as u64, get_divisor(x as u64)))
+            .collect();
 
         (start_n..current_end).into_par_iter().for_each(|n| {
             if check_kummer_condition(n, n + k, &primes_and_divisor, &[]) {
