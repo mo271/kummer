@@ -5,8 +5,8 @@ This repository contains a Rust library and two command-line tools for investiga
 
 The primary goal of these tools is to find pairs of numbers $(n, k)$ such that the central binomial coefficients $\binom{2n}{n}$ and $\binom{2(n+k)}{n+k}$ share the exact same set of prime factors.
 
-* **`kummer` (main binary):** A parallel search tool to find qualifying $n$ values for a given difference $k$.
-* **`check_pair` (utility binary):** A simple program to verify if any specific pair $(n, n+k)$ satisfies the condition.
+* **`kummer`:** A parallel search tool to find qualifying $n$ values for a given difference $k$.
+* **`check_pair`:** A simple program to verify if any specific pair $(n, n+k)$ satisfies the condition.
 
 
 ## Background
