@@ -120,7 +120,6 @@ mod tests {
         let ignored_prime_slice = &[gap_prime];
 
         for &n in gap_cases {
-            // Assert the main condition holds.
             assert!(
                 check_kummer_condition(n, n + distance, &primes_and_divisor, &[]),
                 "Main gap check failed for n = {}",
@@ -162,7 +161,6 @@ mod tests {
 
     #[test]
     fn dist_zero_pairs() {
-        // This test is simple and unique enough to not need a helper.
         let sieve = Sieve::new(1000);
         let primes_and_divisor: Vec<_> = sieve
             .primes_from(3)
