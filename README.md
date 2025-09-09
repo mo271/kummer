@@ -13,7 +13,7 @@ The primary goal of these tools is to find pairs of numbers $(n, k)$ such that t
 
 From [Kummer's Theorem](https://en.wikipedia.org/wiki/Kummer%27s_theorem) one easily obtains the condition:
 
-> For all primes $p$, the central binomial coefficient $\binom{2n}{n}$ is divisible by $p$ if and only if in the base-$p$ representation of $n$ there is a digit $\ge\frac{p}{2}$. 
+> For all primes $p$, the central binomial coefficient $\binom{2n}{n}$ is divisible by $p$ if and only if in the base $p$ representation of $n$ there is a digit $\ge\frac{p}{2}$. 
 
 To check if two central binomials $\binom{2n}{n}$ and $\binom{2m}{n}$ have the same set of prime factors, we go through all primes $p$ with $p\le \max\{2n, 2m\}$, and go through the base $p$ digits of both $m$ and $n$ (simultaneously) and if there ever is a $p$ where the condition is different for $n$ and $m$, we stop, otherwise we have found a pair with the same prime factors. 
 
