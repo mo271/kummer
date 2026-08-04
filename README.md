@@ -142,6 +142,84 @@ or if you also want to test the ones that take a longer time with
 time cargo test --release -- --include-ignored
 ```
 
+## Some results from running this
+
+### Pairs $(n, n + 2)$
+
+AlphaProof found the example $n = 10003$, where the pair $(n, n + 2)$ satisfies the binomial condition.  
+A search yields many more such examples, with $10003$ indeed being the smallest:
+$10003, 17374, 47487, 111547, 121602, 129784, 133161, 142239, 142781, 143762, 152190, 213425, 233332, 250711, 253273, 266843, 288062, 291786, 295135, 303772, 306008, 356277$.
+
+For all of those the pair $(n, n + 1)$ (and hence also $(n + 1, n + 2)$) satisfies the binomial condition.
+
+There are also pairs $(n, n + 2)$ such that $(n, n + 1)$ (and hence also $(n + 1, n + 2)$) does not satisfy the binomial condition. The smallest such are:
+
+$2381725, 129320551, 136226152, 177560668, 177687550$.
+
+For those the prime factors for the central binomial in the middle only differ by a prime factor of $3$ from the ones for the outer ones. See Section “Transitivity failures for $(n, n + 2)$” for a proof that this failure must occur in this form for $p = 3$.
+
+### Pairs $(n, n + 3)$
+
+There are numbers $n$ where all numbers $n, n + 1, n + 2, n + 3$ have central binomials with the same prime factors. The smallest such numbers are:
+
+$3894942, 4505065, 6218569, 7506679, 8879450$.
+
+There are numbers where $(n, n + 3)$ satisfy the binomial condition, but it is not satisfied for $(n, n + 1)$ nor $(n, n + 2)$ (and hence also not for $(n + 1, n + 3)$ and $(n + 2, n + 3)$).  
+
+$1488831402$ and $8549304052$ are examples.  
+
+In those cases, the binomial condition is satisfied for $(n + 1, n + 2)$. The prime factors for the central binomials in the middle only differ by a prime factor of $5$ from the ones for the outer ones. ($1488831402$ in base $5$ is $11022120101102$).
+
+$1723472893$ is an example where $(n, n + 3)$ satisfies the binomial condition and also $(n, n + 1)$, but not $(n, n + 2)$.
+
+### Pairs $(n, n + 4)$
+
+There are numbers $n$ where all numbers $n, n + 1, n + 2, n + 3, n + 4$ have central binomials with the same prime factors. The smallest such numbers are:
+
+$94961106, 320592237, 530571772, 413000786$.
+
+There are numbers where $(n, n + 4)$ satisfy the binomial condition, but it is not satisfied for $(n, n + 1)$ nor $(n, n + 2)$ nor $(n, n + 3)$ (and hence also not for $(n + 1, n + 4)$, $(n + 2, n + 4)$ and $(n + 3, n + 4)$).  
+
+$39561491884$ is such an example.  
+
+In this case, the binomial condition is satisfied for $(n + 1, n + 2)$ and $(n + 2, n + 3)$ (and hence also by $(n + 1, n + 3)$ by transitivity). The prime factors for the central binomials in the middle only differ by a prime factor of $5$ from the ones for the outer ones.
+
+### Pairs $(n, n + 5)$
+
+There are numbers $n$ where all numbers $n, n + 1, n + 2, n + 3, n + 4, n + 5$ have central binomials with the same prime factors. The smallest such numbers are:
+
+$15555748327, 16981964421$.
+
+### Pairs $(n, n + 6)$
+
+There are no such pairs for $n \le 137438887936$.
+
+### Transitivity failures for $(n, n + 2)$
+
+*(discussion by Salvatore Mercuri)*
+
+Here we discuss a necessary condition for which the binomial condition can occur of gap size $2$ outside of transitivity. Specifically, this is the case where the binomial condition is satisfied for $(n, n + 2)$ but not for $(n, n + 1)$ and $(n + 1, n + 2)$. The proof of this makes use of the Kummer condition:
+
+**Lemma.** An odd prime $p$ does not divide the central binomial coefficient $\binom{2n}{n}$ if and only if the base $p$ digits of $n$ are all $\le \lfloor p/2 \rfloor$.
+
+**Proposition.** If the binomial condition is satisfied for $(n, n + 2)$, then it is also satisfied for $(n, n + 1)$ and $(n + 1, n + 2)$ unless $n \equiv 1 \pmod 9$, in which case it is possible for the prime $3$ to divide the inner central binomial coefficient at $n + 1$ but not the two outer central binomial coefficients at $n$ and $n + 2$.
+
+**Proof.**  
+Note that $2$ is always a divisor of the central binomial coefficients so we may in the following only consider odd primes. Let $S_n$ be the set of prime divisors of the central binomial coefficients at $n$. By assumption $S_n = S_{n + 2} =: S$.  
+
+*Claim:* $S \subseteq S_{n + 1}$.
+
+Take an odd prime $p \notin S_{n + 1}$. By the Lemma, we must have that all base $p$ digits of $n + 1$ are $\le \lfloor p/2 \rfloor$. If the last digit $a_0$ is non-zero, then the last digit of $n$ is $a_0 - 1$, so this also satisfies the Lemma and so $p \notin S$. If the last digit $a_0$ is zero, then the last digit of $n$ is $p - 1$, which exceeds $\lfloor p/2 \rfloor$, but the base $p$ digits of $n + 1$ end in $1$, so these digits also satisfy the Lemma and so $p \notin S$.
+
+*Claim:* $S_{n + 1} \subseteq S$ if $n \not\equiv 1 \pmod 3$.
+
+Take an odd prime $p \notin S$ and $p \neq 3$. The base $p$ digits of $n$ are all $\le \lfloor p/2 \rfloor$. Let $a_0$ be the last base $p$ digit of $n$. Because $p > 3$, the last digits of $n + 1$ and $n + 2$ are, respectively, $a_0 + 1$ and $a_0 + 2$. We must also have $a_0 + 2 \le \lfloor p/2 \rfloor$. Hence $a_0 + 1 \le \lfloor p/2 \rfloor$ and the Lemma is satisfied for $n + 1$, so $p \notin S_{n + 1}$. Now consider $p = 3$. We have either $n \equiv 0 \pmod 3$ or $n \equiv 1 \pmod 3$ by the Lemma, and so by assumption $n \equiv 0 \pmod 3$, hence $n + 1$ then satisfies the Lemma, so $3 \notin S_{n + 1}$.
+
+*Claim:* If $3 \notin S$ and $n \equiv 1 \pmod 3$, then we must moreover have $n \equiv 1 \pmod 9$.
+
+If $n \equiv 4$ or $7 \pmod 9$, then $n+2 \equiv 0$ or $3 \pmod 9$. In base $3$, the two least significant digits of $n$ would end in $11$ or $21$, and the digits of $n + 2$ would end in $01$ or $12$. In both cases, $n+2$ contains a digit $\ge 2 = \lfloor 3/2 \rfloor + 1$, which contradicts the Kummer condition for $3 \notin S_{n+2}$. Thus, we must have $n \equiv 1 \pmod 9$. This completes the proof.
+
+
 ## Disclaimer
 
 This is not an officially supported Google product. This project is not
