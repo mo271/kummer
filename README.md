@@ -192,7 +192,7 @@ $15555748327, 16981964421$.
 
 ### Pairs $(n, n + 6)$
 
-There are no such pairs for $n \le 137438887936$.
+There are no such pairs for $n \le 274877841407$.
 
 ### Transitivity failures for $(n, n + 2)$
 
